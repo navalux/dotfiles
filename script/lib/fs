@@ -1,0 +1,173 @@
+#!/bin/sh
+
+# -----------------------------------------------------------------------------
+# Create directory
+#
+# @param {string} $1 - directory
+#
+fs_mkdir() {
+  if [ $# -ne 1 ]; then
+    msg_params_error "fs_mkdir" "$@"
+    return 1
+  fi
+
+  local target="$1"
+
+  if [ -d "$target" ]; then
+    return 0
+  fi
+
+  local errmsg
+  errmsg=$(mkdir -p "$target" 2>&1)
+  if [ -n "$errmsg" ]; then
+    msg_failure "Failed - mkdir -p '${target}'" "${errmsg}"
+    return 1
+  fi
+
+  msg_success "The directory was successfully created." "target = '${target}'"
+}
+
+# -----------------------------------------------------------------------------
+# Copy file
+#
+# @param {string} $1 - source
+# @param {string} $2 - destination
+#
+fs_cp() {
+  if [ $# -ne 2 ]; then
+    msg_params_error "fs_cp" "$@"
+    return 1
+  fi
+
+  local src="$1"
+  local dst="$2"
+
+  if [ -e "${dst}" ]; then
+    local src_ls
+    local dst_ls
+
+    src_ls=$(ls -l "$src")
+    dst_ls=$(ls -l "$dst")
+
+    msg_prompt "The file to be copied is already exist. overwrite? [y/N]" \
+      "src = ${src_ls}" \
+      "dst = ${dst_ls}"
+
+    # shellcheck disable=SC2154
+    if [ "$user_input" != "Y" ] && [ "$user_input" != "y" ]; then
+      msg_normal "Skipped copying file."
+      return 0
+    fi
+  fi
+
+  errmsg=$(cp "$src" "$dst" 2>&1)
+  if [ -n "$errmsg" ]; then
+    msg_failure "Failed to copy file." "src='${src}'" "dst='${dst}'" "${errmsg}"
+    return 1
+  fi
+
+  msg_success "The file was successfully copied." "src='${src}'" "dst='${dst}'"
+}
+
+# -----------------------------------------------------------------------------
+# Create symbolic link
+#
+# @param {string} $1 - target
+# @param {string} $2 - link
+#
+fs_ln_s() {
+  if [ $# -ne 2 ]; then
+    msg_params_error "fs_ln_s" "$@"
+    return 1
+  fi
+
+  local target="$1"
+  local link="$2"
+
+  if [ -e "$link" ]; then
+    if [ "$(readlink "$link")" = "$target" ]; then
+      msg_normal "The symbolic link has already been created."
+      return 0
+    fi
+
+    local target_ls
+    local link_ls
+
+    target_ls=$(ls -l "$target")
+    link_ls=$(ls -l "$link")
+
+    msg_prompt "The link file is already exist. overwrite? [y/N]" \
+      "target = ${target_ls}" \
+      "link   = ${link_ls}"
+
+    if [ "$user_input" != "Y" ] && [ "$user_input" != "y" ]; then
+      msg_normal "Skipped creating symbolic link."
+      return 0
+    fi
+  fi
+
+  errmsg=$(ln -fs "${target}" "${link}" 2>&1)
+  if [ -n "$errmsg" ]; then
+    msg_failure "Failed to create symbolic link." \
+      "target = '${target}'" \
+      "link   = '${link}'" \
+      "${errmsg}"
+    return 1
+  fi
+
+  msg_success "The symbolic link was successfully created." \
+    "target = '${target}'" \
+    "link   = '${link}'"
+}
+
+# -----------------------------------------------------------------------------
+# Unit test
+#
+__lib_fs_test_cleanup() {
+  trap '' HUP INT QUIT PIPE TERM
+
+  rm -rf "$playground"
+
+  trap - EXIT "$1"
+  [ "$1" = EXIT ] || kill -s "$1" $$ || exit 1
+}
+
+__lib_fs_test__() {
+  local libroot
+  libroot="$(dirname "$(realpath "$0")")"
+  . "${libroot}/msg"
+
+  local timestamp
+  timestamp=$(date +'%s')
+  playground="/tmp/libfs-test-${timestamp}"
+
+  fs_mkdir "$playground"
+
+  for i in EXIT HUP INT QUIT PIPE TERM; do
+    trap '__lib_fs_test_cleanup '"$i" "$i"
+  done
+
+  local saved
+  saved=$(pwd)
+
+  cd "$playground" || return 1
+
+  fs_cp "${HOME}/.profile" "${playground}/.profile"
+  fs_cp "${HOME}/.profile" "${playground}/.profile"
+  fs_cp "${HOME}/.profile" "/.profile"
+
+  eval "touch ${playground}/aaa"
+  fs_ln_s "${playground}/aaa" "${playground}/bbb"
+  fs_ln_s "${playground}/aaa" "${playground}/bbb"
+
+  eval "touch ${playground}/ccc"
+  fs_ln_s "${playground}/ccc" "${playground}/bbb"
+
+  fs_ln_s "${playground}/ccc" "/bbb"
+
+  cd "$saved" || return 1
+}
+
+if [ $# -ge 2 ] && [ "$1" = "--test" ] && [ "$2" = "fs" ]; then
+  __lib_fs_test__
+fi

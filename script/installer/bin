@@ -1,0 +1,88 @@
+#!/bin/sh
+
+set -eu
+
+unset -f install_bin_symlink
+unset -f install_bin
+unset -f install_bin_driver
+
+# -----------------------------------------------------------------------------
+# Make symbolic link
+#
+# @param {string} $1 - src (bin directory)
+# @param {string} $2 - dst (install directory)
+# @param {string} $3 - bin name
+#
+install_bin_symlink() {
+  if [ $# -ne 3 ]; then
+    msg_param_error "install_bin_symlink" "$@"
+    exit 1
+  fi
+
+  local src="$1"
+  local dst="$2"
+  local bin="$3"
+
+  msg_normal "Installing ${bin}"
+  fs_ln_s "${src}/${bin}" "${dst}/${bin}"
+}
+
+# -----------------------------------------------------------------------------
+# Installer
+#
+# @param {string} $1 - project root path
+#
+install_bin() {
+  if [ $# -ne 1 ]; then
+    msg_params_error "install_bin" "$@"
+    exit 1
+  fi
+
+  local root="$1"
+
+  local src="${root}/bin"
+  local dst="${HOME}/.local/bin"
+
+  if ! fs_mkdir "$dst"; then
+    exit 1
+  fi
+
+  local bin
+
+  install_bin_symlink "$src" "$dst" "archive"
+  install_bin_symlink "$src" "$dst" "elf2shellcode"
+  install_bin_symlink "$src" "$dst" "fdump"
+
+  if command -v "go" >/dev/null 2>&1; then
+    install_bin_symlink "$src" "$dst" "install-go-tools"
+  fi
+
+  if command -v "python3" >/dev/null 2>&1; then
+    if [ -r "/opt/sqlmap/sqlmap.py" ] ||
+       [ -r "${HOME}/.local/share/sqlmap/sqlmap.py" ]; then
+      install_bin_symlink "$src" "$dst" "sqlmap"
+    fi
+  fi
+
+  if command -v "pip3" >/dev/null 2>&1; then
+    install_bin_symlink "$src" "$dst" "upgrade-pip"
+  fi
+}
+
+# -----------------------------------------------------------------------------
+# Driver
+#
+install_bin_driver() {
+  local root
+  root="$(realpath "$(dirname "$(realpath "$0")")/../../")"
+
+  . "${root}/script/lib/fs"
+  . "${root}/script/lib/list"
+  . "${root}/script/lib/msg"
+
+  install_bin "$root"
+}
+
+if [ "${0##*/}" = "bin" ]; then
+  install_bin_driver
+fi

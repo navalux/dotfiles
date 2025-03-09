@@ -1,0 +1,8 @@
+[Desktop Entry]
+Version=1.0
+Name=Ghidra
+Exec=/opt/ghidra/ghidraRun
+Terminal=false
+Icon=/opt/ghidra/icons/ghidra_7_128x128x32.png
+Type=Application
+Categories=Development;

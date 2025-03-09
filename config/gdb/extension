@@ -1,0 +1,30 @@
+# -----------------------------------------------------------------------------
+# pwndbg
+# - https://github.com/pwndbg/pwndbg
+#
+# source ~/.local/share/pwndbg/gdbinit.py
+
+
+# -----------------------------------------------------------------------------
+# gef
+# - https://github.com/hugsy/gef
+#
+# source ~/.local/share/gef/gef.py
+
+
+# -----------------------------------------------------------------------------
+# bata-gef
+# - https://github.com/bata/gef
+#
+# source ~/.local/share/bata-gef/gef.py
+
+
+# -----------------------------------------------------------------------------
+# gdb-pt-dump
+# - https://github.com/martinradev/gdb-pt-dump
+# - https://github.com/zolutal/gdb-pt-dump
+#
+# source ~/.local/share/gdb-pt-dump/pt.py
+
+
+# set ft=gdb

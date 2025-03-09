@@ -1,0 +1,66 @@
+#!/bin/sh
+
+set -eu
+
+unset -f install_config_xsession_symlink
+unset -f install_config_xsession
+unset -f install_config_xsession_driver
+
+# -----------------------------------------------------------------------------
+# Make symbolic link
+#
+# @param {string} $1 - target
+# @param {string} $2 - link
+#
+install_config_xsession_symlink() {
+  if [ $# -ne 2 ]; then
+    msg_param_error "install_config_xsession_symlink" "$@"
+    exit 1
+  fi
+
+  local target="$1"
+  local link="$2"
+
+  msg_normal "Installing ${target##*/}"
+  if ! fs_ln_s "$target" "$link"; then
+    exit 1
+  fi
+}
+
+# -----------------------------------------------------------------------------
+# Installer
+#
+# @param {string} $1 - project root path
+#
+install_config_xsession() {
+  if [ $# -ne 1 ]; then
+    msg_param_error "install_config_xsession" "$@"
+    exit 1
+  fi
+
+  local root="$1"
+
+  local src="${root}/config/xsession"
+  local dst="${HOME}"
+
+  install_config_xsession_symlink "${src}/xsession"   "${dst}/.xsession"
+  install_config_xsession_symlink "${src}/xsessionrc" "${dst}/.xsessionrc"
+}
+
+# -----------------------------------------------------------------------------
+# Driver
+#
+install_config_xsession_driver() {
+  local root
+  root="$(realpath "$(dirname "$(realpath "$0")")/../../../")"
+
+  . "${root}/script/lib/fs"
+  . "${root}/script/lib/list"
+  . "${root}/script/lib/msg"
+
+  install_config_xsession "$root"
+}
+
+if [ "${0##*/}" = "xsession" ]; then
+  install_config_xsession_driver
+fi

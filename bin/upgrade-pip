@@ -1,0 +1,15 @@
+#!/bin/sh
+
+set -eu
+
+echo "[+] Creating outdated package list."
+list=$(python3 -m pip list --outdated)
+if [ -z "$list" ]; then
+  echo "[+] All packages are up to date."
+  exit 0
+fi
+
+echo "$list" | awk '{printf "    %s\n",$0}'
+
+echo "[+] Upgrading packages."
+echo "$list" | awk 'NR>2 {print $1}' | xargs -n1 python3 -m pip install -U

@@ -1,0 +1,177 @@
+# -----------------------------------------------------------------------------
+# Locale
+#
+export LANG=en_US.UTF-8
+
+
+# -----------------------------------------------------------------------------
+# Function: Prepend PATH
+#
+prepend_path() {
+  if [ ! -d "$1" ]; then
+    return
+  fi
+
+  local path
+  for path in $(echo "$PATH" | tr ':' ' '); do
+    if [ "$path" = "$1" ]; then
+      return
+    fi
+  done
+
+  export PATH="${1}:${PATH}"
+}
+
+
+# -----------------------------------------------------------------------------
+# Colorize man pages (less)
+#
+if less --help 2>&1 | grep -q -- --use-color; then
+  export MANPAGER="less -R --use-color -Dk+r -Dd+r -DS+ky -Du+b"
+  export MANROFFOPT="-c"
+else
+  # termcap(5)
+  LESS_TERMCAP_mb=$(printf '\e[5;31m')      # Start blinking
+  LESS_TERMCAP_md=$(printf '\e[1;31m')      # Start bold mode
+  LESS_TERMCAP_me=$(printf '\e[0m')         # End all mode
+  LESS_TERMCAP_so=$(printf '\e[01;30;43m')  # Start standout mode
+  LESS_TERMCAP_se=$(printf '\e[0m')         # End standout mode
+  LESS_TERMCAP_us=$(printf '\e[1;4;34m')    # Start underlining
+  LESS_TERMCAP_ue=$(printf '\e[0m')         # End underlining
+
+  export LESS_TERMCAP_mb
+  export LESS_TERMCAP_md
+  export LESS_TERMCAP_me
+  export LESS_TERMCAP_so
+  export LESS_TERMCAP_se
+  export LESS_TERMCAP_us
+  export LESS_TERMCAP_ue
+fi
+
+
+# -----------------------------------------------------------------------------
+# dircolors
+#
+if command -v dircolors >/dev/null && [ -r "${HOME}/.dircolors" ]; then
+  eval "$(dircolors "${HOME}/.dircolors")"
+fi
+
+
+# -----------------------------------------------------------------------------
+# Set timestamp format of history command
+#
+export HISTTIMEFORMAT="%Y-%m-%d %H:%M:%S %z "
+
+
+# -----------------------------------------------------------------------------
+# tinted-shell
+#
+if [ -d "${HOME}/.config/tinted-theming/tinted-shell" ]; then
+  export BASE16_SHELL_PATH="${HOME}/.config/tinted-theming/tinted-shell"
+  export BASE16_THEME_DEFAULT="eighties"
+fi
+
+
+# -----------------------------------------------------------------------------
+# ~/.local/bin
+#
+if [ -d "${HOME}/.local/bin" ]; then
+  prepend_path "${HOME}/.local/bin"
+fi
+
+
+# -----------------------------------------------------------------------------
+# pyenv
+#
+if [ -x "${HOME}/.pyenv/bin/pyenv" ]; then
+  if [ -z "$PYENV_ROOT" ]; then
+    export PYENV_ROOT="${HOME}/.pyenv"
+  fi
+
+  prepend_path "${PYENV_ROOT}/bin"
+fi
+
+
+# -----------------------------------------------------------------------------
+# venv
+#
+if [ -r "${HOME}/.local/share/default-venv/bin/activate" ]; then
+  export VIRTUAL_ENV_DISABLE_PROMPT=1
+  . "${HOME}/.local/share/default-venv/bin/activate"
+elif [ -r "/opt/default-venv/bin/activate" ]; then
+  export VIRTUAL_ENV_DISABLE_PROMPT=1
+  . "/opt/default-venv/bin/activate"
+fi
+
+
+# -----------------------------------------------------------------------------
+# Go
+#
+if [ -d "/usr/local/go/bin" ]; then
+  prepend_path "/usr/local/go/bin"
+  prepend_path "$(go env GOPATH)/bin"
+fi
+
+
+# -----------------------------------------------------------------------------
+# Cargo
+#
+if [ -d "${HOME}/.cargo/bin" ]; then
+  prepend_path "${HOME}/.cargo/bin"
+fi
+
+
+# -----------------------------------------------------------------------------
+# Neovim
+#
+if [ -d "/opt/nvim-linux-x86_64" ]; then
+  prepend_path "/opt/nvim-linux-x86_64/bin"
+fi
+
+
+# -----------------------------------------------------------------------------
+# Java Development Kit
+#
+if [ -d "/opt/java/jdk" ]; then
+  if [ -z "$JAVA_HOME" ]; then
+    export JAVA_HOME="/opt/java/jdk"
+  fi
+
+  prepend_path "${JAVA_HOME}/bin"
+fi
+
+
+# -----------------------------------------------------------------------------
+# fnm
+#
+if [ -d "${HOME}/.local/share/fnm" ]; then
+  prepend_path "${HOME}/.local/share/fnm"
+fi
+
+if command -v fnm >/dev/null 2>&1; then
+  eval "$(fnm env --use-on-cd --version-file-strategy=recursive --shell bash)"
+fi
+
+
+# -----------------------------------------------------------------------------
+# Unset internal functions
+#
+unset -f prepend_path
+
+
+# -----------------------------------------------------------------------------
+# Source local .bash_profile
+#
+if [ -r "${HOME}/.bash_profile.local" ]; then
+  . "${HOME}/.bash_profile.local"
+fi
+
+
+# -----------------------------------------------------------------------------
+# Source .bashrc
+#
+if [ -r "${HOME}/.bashrc" ]; then
+  . "${HOME}/.bashrc"
+fi
+
+# vim: ft=sh

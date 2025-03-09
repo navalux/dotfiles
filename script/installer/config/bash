@@ -1,0 +1,72 @@
+#!/bin/sh
+
+set -eu
+
+unset -f install_config_bash_symlink
+unset -f install_config_bash
+unset -f install_config_bash_driver
+
+# -----------------------------------------------------------------------------
+# Make symbolic link
+#
+# @param {string} $1 - target
+# @param {string} $2 - link
+#
+install_config_bash_symlink() {
+  if [ $# -ne 2 ]; then
+    msg_param_error "install_config_bash_symlink" "$@"
+    exit 1
+  fi
+
+  local target="$1"
+  local link="$2"
+
+  msg_normal "Installing ${target##*/}"
+  if ! fs_ln_s "$target" "$link"; then
+    exit 1
+  fi
+}
+
+# -----------------------------------------------------------------------------
+# Installer
+#
+# @param {string} $1 - project root path
+#
+install_config_bash() {
+  if [ $# -ne 1 ]; then
+    msg_param_error "install_config_bash" "$@"
+    exit 1
+  fi
+
+  local root="$1"
+
+  local src="${root}/config/bash"
+  local dst="${HOME}"
+
+  install_config_bash_symlink "${src}/bash_profile" "${dst}/.bash_profile"
+  install_config_bash_symlink "${src}/bashrc"       "${dst}/.bashrc"
+
+  dst="${HOME}/.config/bash"
+  if ! fs_mkdir "$dst"; then
+    exit 1
+  fi
+  install_config_bash_symlink "${src}/git-prompt.sh" "${dst}/git-prompt.sh"
+}
+
+# -----------------------------------------------------------------------------
+# Driver
+#
+install_config_bash_driver() {
+  local root
+  root="$(realpath "$(dirname "$(realpath "$0")")/../../../")"
+
+  . "${root}/script/lib/fs"
+  . "${root}/script/lib/list"
+  . "${root}/script/lib/msg"
+
+  install_config_bash "$root"
+}
+
+if [ "${0##*/}" = "bash" ]; then
+  install_config_bash_driver
+fi

@@ -1,0 +1,29 @@
+#!/bin/sh
+
+set -eu
+
+check_command_installed() {
+  if ! command -v "$1" 1>/dev/null 2>&1; then
+    echo "$1 is not installed."
+    exit 1
+  fi
+}
+
+main() {
+  if [ $# -ne 1 ]; then
+    echo "Usage: $(basename "$0") /path/to/elf"
+    exit 1
+  fi
+
+  check_command_installed objdump
+  check_command_installed grep
+  check_command_installed cut
+  check_command_installed perl
+
+  objdump -M intel -d "$1" \
+    | grep '^ ' \
+    | cut -f2 \
+    | perl -pe 's/(\w{2})\s+/\\x\1/g'
+}
+
+main "$@"

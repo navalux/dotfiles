@@ -1,0 +1,197 @@
+" -----------------------------------------------------------------------------
+"  Disable Vi-compatible
+"
+set nocompatible
+
+
+" -----------------------------------------------------------------------------
+"  Load plugins
+"
+let s:plugrc = expand('$HOME/.vim/plugrc.vim')
+if filereadable(s:plugrc)
+  execute 'source ' . s:plugrc
+endif
+
+
+" -----------------------------------------------------------------------------
+"  General
+"
+set belloff=all
+set novisualbell
+
+set modeline
+set modelines=5
+
+set enc=utf-8
+
+
+" -----------------------------------------------------------------------------
+"  Disable unneeded file creation
+"
+set nobackup
+set noswapfile
+
+if has('persistent_undo')
+  set noundofile
+endif
+
+if has('viminfo')
+  set viminfo=""
+endif
+
+
+" -----------------------------------------------------------------------------
+"  Appearance
+"
+filetype plugin indent on
+syntax enable
+
+set showcmd
+if has('patch-9.0.1061')
+  set showcmdloc=last
+endif
+
+set laststatus=2
+set ruler
+set stl=%<%f\ %m%r%h%w%{'['.(&fenc!=''?&fenc:&enc).']['.&ff.']'}%=%l,%c%V%8P
+
+set background=dark
+
+if has('termguicolors')
+  set termguicolors
+endif
+
+set fillchars+=vert:\│
+
+set listchars=tab:>-,eol:$
+
+set number
+set cursorline
+if has('+cursorlineopt')
+  set cursorlineopt=screenline,number
+endif
+
+
+" -----------------------------------------------------------------------------
+"  Editing options
+"
+set nobomb
+
+set backspace=indent,eol,start
+
+set textwidth=0
+
+set shiftwidth=2
+set softtabstop=2
+set tabstop=2
+set expandtab
+
+set cindent
+set cinoptions=:0,l1,g0,N-s,E-s,t0,(0,Ws,m1,j1
+
+set completeopt-=preview
+
+
+" -----------------------------------------------------------------------------
+"  Editing options by fileype
+"
+autocmd FileType python setl shiftwidth=4 softtabstop=4 tabstop=4 expandtab
+autocmd FileType rust   setl shiftwidth=4 softtabstop=4 tabstop=4 expandtab
+autocmd FileType go     setl shiftwidth=4 softtabstop=4 tabstop=4 noexpandtab
+autocmd FileType make   setl shiftwidth=4 softtabstop=4 tabstop=4 noexpandtab
+autocmd FileType kotlin setl shiftwidth=4 softtabstop=4 tabstop=4 expandtab
+autocmd FileType java   setl shiftwidth=4 softtabstop=4 tabstop=4 expandtab
+autocmd FileType c      setl shiftwidth=4 softtabstop=4 tabstop=4 expandtab
+autocmd FileType cpp    setl shiftwidth=4 softtabstop=4 tabstop=4 expandtab
+
+function! EnableGNUStyle()
+  if (&filetype == 'c' || &filetype == 'cpp')
+    setl shiftwidth=2 softtabstop=8 tabstop=8 noexpandtab
+  endif
+endfunction
+
+autocmd BufRead,BufNewFile */glibc/**/* call EnableGNUStyle()
+autocmd BufRead,BufNewFile */gcc*/**/*  call EnableGNUStyle()
+
+autocmd BufRead .shellcheckrc set filetype=conf
+
+
+" -----------------------------------------------------------------------------
+"  Search
+"
+set hlsearch
+
+if has('extra_search')
+  set incsearch
+endif
+
+
+" -----------------------------------------------------------------------------
+"  Clipboard
+"
+function! ExportRegister(manager)
+  if a:manager == 'xsel'
+    call system('echo -n ' ..
+          \     shellescape(join(v:event.regcontents, "\n")) ..
+          \     ' | xsel -pi && xsel -po | xsel -bi')
+  elseif a:manager == 'tmux'
+    call system('echo -n ' ..
+          \     shellescape(join(v:event.regcontents, "\n")) ..
+          \     ' | xargs -0I {} tmux set-buffer -- {}')
+  endif
+endfunction
+
+if has('clipboard')
+  set clipboard=unnamed
+  if has('unnamedplus')
+    set clipboard+=unnamedplus
+  endif
+else
+  if exists('##TextYankPost')
+    if exists('$DISPLAY') && executable('xsel')
+      autocmd TextYankPost * call ExportRegister('xsel')
+    elseif exists('$TMUX')
+      autocmd TextYankPost * call ExportRegister('tmux')
+    endif
+  endif
+endif
+
+
+" -----------------------------------------------------------------------------
+"  Keybinds
+"
+nnoremap <C-W><C-L> :Vexplore!<CR>
+nnoremap <C-W><C-H> :Vexplore<CR>
+nnoremap <C-W><C-J> :Hexplore<CR>
+nnoremap <C-W><C-K> :Hexplore!<CR>
+
+" Hit ENTER to disable search highlight
+nnoremap <CR> :noh<CR><CR>
+
+" Hit ESC to escape from terminal
+if exists(':tnoremap')
+  tnoremap <silent> <ESC> <C-\><C-n>
+endif
+
+
+" -----------------------------------------------------------------------------
+"  Commands
+"
+command! -nargs=* -complete=help Vh vertical belowright help <args>
+
+
+" -----------------------------------------------------------------------------
+"  Function to get group name of highlighting under cursor
+"
+function! SynStack()
+  if !exists("*synstack")
+    return
+  endif
+  echo map(synstack(line('.'), col('.')), 'synIDattr(v:val, "name")')
+endfunc
+
+
+" -----------------------------------------------------------------------------
+"  Defence against harmful .vimrc
+"
+set secure

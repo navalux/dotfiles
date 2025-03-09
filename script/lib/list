@@ -1,0 +1,181 @@
+#!/bin/sh
+
+# -----------------------------------------------------------------------------
+# Append item to list
+#
+# @param  {string} $1 - list
+# @param  {string} $2 - item
+# @param  {string} $3 - separator (default: ",")
+# @return {string} list
+#
+list_append() {
+  if [ $# -lt 2 ]; then
+    msg_params_error "list_append" "$@"
+    exit 1
+  fi
+
+  local list="$1"
+  local item="$2"
+  local separator="${3:-","}"
+
+  if [ -n "$list" ]; then
+    printf "%s%s" "$list" "$separator"
+  fi
+
+  printf "%s" "$item"
+}
+
+# -----------------------------------------------------------------------------
+# Remove item from list
+#
+# @param  {string} $1 - list
+# @param  {string} $2 - item
+# @param  {string} $3 - separator (default: ",")
+# @return {string} list
+#
+list_remove() {
+  if [ $# -lt 2 ]; then
+    msg_params_error "list_remove" "$@"
+    exit 1
+  fi
+
+  local list="$1"
+  local target="$2"
+  local separator="${3:-","}"
+
+  local saved="$IFS"
+  IFS=$separator
+
+  local is_first=1
+  local item
+
+  for item in $list; do
+    if [ "$item" = "$target" ]; then
+      continue
+    fi
+
+    if [ $is_first -eq 1 ]; then
+      is_first=0
+    else
+      printf "%s" "$separator"
+    fi
+
+    printf "%s" "$item"
+  done
+
+  IFS=$saved
+}
+
+# -----------------------------------------------------------------------------
+# Get length of list
+#
+# @param {string} $1 - list
+# @param {string} $2 - separator (default: ",")
+# @return {integer} list length
+#
+list_length() {
+  if [ $# -lt 1 ]; then
+    msg_params_error "list_length" "$@"
+    exit 1
+  fi
+
+  local list="$1"
+  local separator="${2:-","}"
+
+  local saved="$IFS"
+  IFS=$separator
+
+  local count=0
+  local item
+
+  for item in $list; do
+    count=$((count + 1))
+  done
+
+  printf "%d" $count
+
+  IFS=$saved
+}
+
+# -----------------------------------------------------------------------------
+# Get item at index
+#
+# @param  {string}  $1 - list
+# @param  {integer} $2 - index
+# @param  {string}  $3 - separator (default: ",")
+# @return {string} item
+#
+list_at() {
+  if [ $# -lt 2 ]; then
+    msg_params_error "list_at" "$@"
+    exit 1
+  fi
+
+  local list="$1"
+  local index="$2"
+  local separator="${3:-","}"
+
+  if [ -z "$index" ] || [ "$index" != "${index##[!0-9]*}" ]; then
+    return 1
+  fi
+
+  local saved="$IFS"
+  IFS=$separator
+
+  local count=0
+  local item
+
+  for item in $list; do
+    if [ $count -eq "$index" ]; then
+      printf "%s" "$item"
+      break
+    fi
+    count=$((count + 1))
+  done
+
+  IFS=$saved
+}
+
+# -----------------------------------------------------------------------------
+# Unit test
+#
+__lib_list_test__() {
+  local libroot
+  libroot="$(dirname "$(realpath "$0")")"
+  . "${libroot}/msg"
+
+  local list
+
+  list=$(list_append "$list" "aaa")
+  msg_normal "$list"
+
+  list=$(list_append "$list" "bbb")
+  msg_normal "$list"
+
+  list=$(list_append "$list" "ccc")
+  msg_normal "$list"
+
+  list=$(list_append "$list" "ddd")
+  msg_normal "$list"
+
+  list=$(list_append "$list" "eee")
+  msg_normal "$list"
+
+  local length
+  length=$(list_length "$list")
+  msg_normal "$length"
+
+  list=$(list_remove "$list" "ccc")
+  msg_normal "$list"
+
+  length=$(list_length "$list")
+  msg_normal "$length"
+
+  local item
+  item=$(list_at "$list" "2")
+  msg_normal "$item"
+}
+
+if [ $# -ge 2 ] && [ "$1" = "--test" ] && [ "$2" = "list" ]; then
+  __lib_list_test__
+fi

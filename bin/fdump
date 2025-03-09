@@ -1,0 +1,15 @@
+#!/bin/sh
+
+set -eu
+
+main() {
+  if [ $# -ne 2 ]; then
+    echo "Usage: $(basename "$0") /path/to/elf function_name"
+    exit 1
+  fi
+
+  objdump -M intel -d "$1" | awk -v RS= "/^[[:xdigit:]]+ <$2>/"
+
+}
+
+main "$@"

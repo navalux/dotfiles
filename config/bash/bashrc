@@ -1,0 +1,150 @@
+# -----------------------------------------------------------------------------
+# If not running interactively, don't do anything
+#
+case $- in
+  *i*) ;;
+  *)   return;;
+esac
+
+
+# -----------------------------------------------------------------------------
+# Disable XON/XOFF flow control
+#
+if command -v stty &>/dev/null; then
+  stty -ixon
+fi
+
+
+# -----------------------------------------------------------------------------
+# Initialize PS1
+#
+if [ -x /usr/bin/tput ] && tput setaf 1 &>/dev/null; then
+  color_reset="\[\e[0m\]"
+  color_green="\[\e[0;32m\]"
+  color_cyan="\[\e[0;36m\]"
+  color_yellow="\[\e[0;33m\]"
+else
+  color_reset=""
+  color_green=""
+  color_cyan=""
+  color_yellow=""
+fi
+
+PS1="${color_green}\u"
+PS1+="${color_reset}@"
+PS1+="${color_cyan}\h "
+PS1+="${color_yellow}\w"
+PS1+="${color_reset}"
+
+
+# -----------------------------------------------------------------------------
+# Append git branch name to PS1
+#
+if command -v git &>/dev/null &&
+  [ -r "${HOME}/.config/bash/git-prompt.sh" ] &&
+  [ -n "${ENABLE_PS1_GIT}" ]; then
+  . "${HOME}/.config/bash/git-prompt.sh"
+  PS1+='$(__git_ps1  " (%s)")'
+fi
+
+
+# -----------------------------------------------------------------------------
+# Finalize PS1
+#
+PS1+="\n"
+PS1+="${color_reset}$ "
+
+unset color_reset color_green color_cyan color_yellow
+
+
+# -----------------------------------------------------------------------------
+# tinted-shell
+#
+if [ -n "${BASE16_SHELL_PATH}" ]; then
+  . "${BASE16_SHELL_PATH}/profile_helper.sh"
+fi
+
+
+# -----------------------------------------------------------------------------
+# History
+#
+HISTCONTROL=ignoreboth
+shopt -s histappend
+HISTSIZE=1000
+HISTFILESIZE=2000
+
+
+# -----------------------------------------------------------------------------
+# Check and update LINES and COLUMNS after each command
+#
+shopt -s checkwinsize
+
+
+# -----------------------------------------------------------------------------
+# Colorize completion
+#
+bind "set colored-completion-prefix on"
+bind "set colored-stats on"
+
+
+# -----------------------------------------------------------------------------
+# Aliases
+#
+alias ls='ls --color=auto'
+alias ll='ls -l'
+alias la='ls -la'
+alias tmux='tmux -2'
+
+if grep --help 2>&1 | grep -q -- --color; then
+  alias grep='grep --color=auto'
+fi
+
+if tree --help 2>&1 | grep -q -- --dirsfirst; then
+  alias tree='tree --dirsfirst'
+fi
+
+if diff --help 2>&1 | grep -q -- --color; then
+  if diff --help 2>&1 | grep -q -- --unified; then
+    alias diff='diff --color=auto --unified'
+  else
+    alias diff='diff --color=auto'
+  fi
+fi
+
+
+# -----------------------------------------------------------------------------
+# Enable bash-completion
+#
+if ! shopt -oq posix; then
+  if [ -r /usr/share/bash-completion/bash_completion ]; then
+    . /usr/share/bash-completion/bash_completion
+  elif [ -r /etc/bash_completion ]; then
+    . /etc/bash_completion
+  fi
+fi
+
+
+# -----------------------------------------------------------------------------
+# pyenv
+#
+if command -v pyenv &>/dev/null; then
+  eval "$(pyenv init -)"
+  eval "$(pyenv virtualenv-init - &>/dev/null)"
+fi
+
+
+# -----------------------------------------------------------------------------
+# GnuPG
+#
+if command -v gpg &>/dev/null; then
+  GPG_TTY=$(tty)
+  export GPG_TTY
+fi
+
+
+# -----------------------------------------------------------------------------
+# Source local .bashrc
+#
+if [ -r "${HOME}/.bashrc.local" ]; then
+  . "${HOME}/.bashrc.local"
+fi

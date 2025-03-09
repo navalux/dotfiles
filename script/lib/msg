@@ -1,0 +1,279 @@
+#!/bin/sh
+
+NO_COLOR=${NO_COLOR:=}
+
+# -----------------------------------------------------------------------------
+# Disable colorize
+#
+msg_disable_colorize() {
+  NO_COLOR=1
+}
+
+# -----------------------------------------------------------------------------
+# Check colorize enabled
+#
+# @return {number} 0=enabled, 1=disabled
+#
+msg_enabled_colorize() {
+  if [ -t 1 ] && [ -z "$NO_COLOR" ]; then
+    return 0
+  fi
+
+  return 1
+}
+
+# -----------------------------------------------------------------------------
+# Output parameter error message
+#
+# @param {string} $1 - function name
+# @params            - parameters
+#
+msg_params_error() {
+  if [ $# -eq 0 ]; then
+    msg_params_error "msg_params_error" "$@"
+    exit 1
+  fi
+
+  local fname="$1"
+  shift
+
+  if msg_enabled_colorize; then
+    printf "\033[31m" >&2
+  fi
+  printf "%s(): Invalid parameters. \$#=%d\n" "$fname" "$#" >&2
+
+  local index=1
+  while [ $# -gt 0 ]; do
+    printf "    \$%d = '%s'\n" "$index" "$1" >&2
+    index=$((index + 1))
+    shift
+  done
+
+  if msg_enabled_colorize; then
+    printf "\033[0m" >&2
+  fi
+}
+
+# -----------------------------------------------------------------------------
+# Output normal message
+#
+# @params {string} - messages (one message per param)
+#
+msg_normal() {
+  if [ $# -eq 0 ]; then
+    msg_params_error "msg_normal" "$@"
+    exit 1
+  fi
+
+  local first_line=1
+
+  while [ $# -gt 0 ]; do
+    if [ $first_line -eq 1 ]; then
+      first_line=0
+      echo "[-] $1" >&1
+    else
+      echo "    $1" >&1
+    fi
+
+    shift
+  done
+}
+
+# -----------------------------------------------------------------------------
+# Output success message
+#
+# @params {string} - messages (one message per param)
+#
+msg_success() {
+  if [ $# -eq 0 ]; then
+    msg_params_error "msg_success" "$@"
+    exit 1
+  fi
+
+  local first_line=1
+
+  if msg_enabled_colorize; then
+    printf "\033[34m" >&1
+  fi
+
+  while [ $# -gt 0 ]; do
+    if [ $first_line -eq 1 ]; then
+      first_line=0
+      echo "[+] $1" >&1
+    else
+      echo "    $1" >&1
+    fi
+
+    shift
+  done
+
+  if msg_enabled_colorize; then
+    printf "\033[0m" >&1
+  fi
+}
+
+# -----------------------------------------------------------------------------
+# Output failure message
+#
+# @params {string} - messages (one message per param)
+#
+msg_failure() {
+  if [ $# -eq 0 ]; then
+    msg_params_error "msg_failure" "$@"
+    exit 1
+  fi
+
+  local first_line=1
+
+  if msg_enabled_colorize; then
+    printf "\033[31m" >&2
+  fi
+
+  while [ $# -gt 0 ]; do
+    if [ $first_line -eq 1 ]; then
+      first_line=0
+      echo "[!] $1" >&2
+    else
+      echo "    $1" >&2
+    fi
+
+    shift
+  done
+
+  if msg_enabled_colorize; then
+    printf "\033[0m" >&2
+  fi
+}
+
+# -----------------------------------------------------------------------------
+# Output prompt
+#
+# user input is stored in $user_input
+#
+# @params {string} - messages (one message per param)
+#
+msg_prompt() {
+  if [ $# -eq 0 ]; then
+    msg_params_error "msg_prompt" "$@"
+    exit 1
+  fi
+
+  local first_line=1
+
+  if msg_enabled_colorize; then
+    printf "\033[33m" >&1
+  fi
+
+  while [ $# -gt 0 ]; do
+    if [ $first_line -eq 1 ]; then
+      first_line=0
+      echo "[?] $1" >&1
+    else
+      echo "    $1" >&1
+    fi
+
+    shift
+  done
+
+  printf "    > " >&1
+
+  if msg_enabled_colorize; then
+    printf "\033[0m" >&1
+  fi
+
+  read -r user_input
+}
+
+# -----------------------------------------------------------------------------
+# Output select
+#
+# user input is stored in $user_input
+#
+# @param  {string} - messages
+# @param  {string} - list
+# @param  {string} - list separator (default: ",")
+#
+msg_select() {
+  if [ $# -lt 2 ]; then
+    msg_params_error "msg_select" "$@"
+    exit 1
+  fi
+
+  local message="$1"
+  local list="$2"
+  local separator="${3:-,}"
+
+  if msg_enabled_colorize; then
+    printf "\033[33m" >&1
+  fi
+
+  echo "[?] ${message}" >&1
+  printf "    " >&1
+
+  local index=0
+  while true; do
+    local item
+    item="$(list_at "$list" "$index" "$separator")"
+    test -z "$item" && break
+
+    printf "%2d. %-30s" "$index" "$item" >&1
+
+    index=$((index + 1))
+
+    if [ $((index % 2)) -eq 0 ]; then
+      printf "\n    " >&1
+    fi
+  done
+
+  if [ $((index % 2)) -eq 0 ]; then
+    printf "> " >&1
+  else
+    printf "\n    > " >&1
+  fi
+
+  if msg_enabled_colorize; then
+    printf "\033[0m" >&1
+  fi
+
+  read -r user_input
+}
+
+# -----------------------------------------------------------------------------
+# Unit test
+#
+__lib_msg_test__() {
+  local libroot
+  libroot="$(dirname "$(realpath "$0")")"
+  . "${libroot}/list"
+
+  msg_params_error "fname" "aaa" "bbb ccc" "ddd" "eee"
+
+  msg_normal "Normal message."
+  msg_normal "Normal multi message 1." "Noamrl multi message 2." "Normal multi message 3."
+
+  msg_success "Success message."
+  msg_success "Success multi message 1." "Success multi message 2." "Success multi message 3."
+
+  msg_failure "Failure message."
+  msg_failure "Failure multi message 1." "Failure multi message 2." "Failure multi message 3."
+
+  msg_prompt "Prompt message."
+  msg_normal "input=${user_input}"
+
+  msg_prompt "Prompt multi message 1." "Prompt multi message 2." "Prompt multi message 3."
+  msg_normal "input=${user_input}"
+
+  local list
+  list=$(list_append "$list" "aaa")
+  list=$(list_append "$list" "bbb")
+  list=$(list_append "$list" "ccc")
+  list=$(list_append "$list" "ddd")
+  list=$(list_append "$list" "eee")
+
+  msg_select "Input installation target number." "$list"
+  msg_normal "input=${user_input}"
+}
+
+if [ $# -ge 2 ] && [ "$1" = "--test" ] && [ "$2" = "msg" ]; then
+  __lib_msg_test__
+fi

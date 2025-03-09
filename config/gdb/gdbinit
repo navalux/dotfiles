@@ -1,0 +1,61 @@
+# -----------------------------------------------------------------------------
+# Settings
+#
+set disassembly-flavor intel
+set disable-randomization on
+set history save on
+set height 0
+set print pretty on
+set follow-fork-mode parent
+
+
+# -----------------------------------------------------------------------------
+# Safe-Linking mangle
+#
+define safe_linking_demangle
+  printf "pos    = %p\n", $arg0
+  printf "ptr    = %p\n", *(long int *)$arg0
+  printf "result = %p\n", *(long int *)$arg0 ^ ($arg0 >> 12)
+end
+
+document safe_linking_demangle
+usage: safe_linking_demangle target
+
+Demangle address stored at target.
+end
+
+
+# -----------------------------------------------------------------------------
+# Safe-Linking demangle
+#
+define safe_linking_mangle
+  printf "pos    = %p\n", $arg0
+  printf "ptr    = %p\n", $arg1
+  printf "result = %p\n", $arg1 ^ ($arg0 >> 12)
+end
+
+document safe_linking_mangle
+usage: safe_linking_mangle pos ptr
+
+Mangle ptr wit pos.
+end
+
+
+# -----------------------------------------------------------------------------
+# extensions
+#
+source ~/.config/gdb/extension
+
+
+# -----------------------------------------------------------------------------
+# debug symbol
+#
+python
+import os
+if os.path.exists(os.path.expanduser('~/.local/lib/debug')):
+  dirs = []
+  dirs.append(os.path.expanduser('~/.local/lib/debug'))
+  dirs.append(gdb.parameter('debug-file-directory'))
+
+  gdb.set_parameter('debug-file-directory', ':'.join(dirs))
+end

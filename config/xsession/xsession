@@ -1,0 +1,4 @@
+exec > /tmp/startx_$$.log 2>&1
+exec startxfce4
+
+# vim: ft=sh

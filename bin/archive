@@ -1,0 +1,238 @@
+#!/bin/sh
+
+set -eu
+
+use_git_archive=0
+enable_timestamp=0
+target=""
+tmpdir=""
+
+# -----------------------------------------------------------------------------
+# Print parameter error message
+#
+# @param {string} $1 - function name
+# @params            - parameters
+#
+print_params_error() {
+  if [ $# -eq 0 ]; then
+    print_params_error "print_params_error" "$@"
+    exit 1
+  fi
+
+  local fname="$1"
+  shift
+
+  printf "%s(): Invalid parameters. \$#=%d\n" "$fname" "$#"
+
+  local index=1
+  while test $# -gt 0; do
+    printf "    \$%d = '%s'\n" "$index" "$1"
+    index=$((index + 1))
+    shift
+  done
+}
+
+# -----------------------------------------------------------------------------
+# Print usage
+#
+print_usage() {
+  echo "Usage: $(basename "$0") [options] path-to-directory"
+  echo
+  echo "   -g     Use 'git-archive' instead of 'tar'."
+  echo "   -t     Append timestamp to archive file name."
+  echo "   -h     Print usage."
+  echo
+}
+
+# -----------------------------------------------------------------------------
+# Parse command line arguments
+#
+# @params - command line arguments
+#
+parse_args() {
+  while getopts gth opt; do
+    case $opt in
+      g)  use_git_archive=1;;
+      t)  enable_timestamp=1;;
+      h | \?) print_usage; exit 1;;
+    esac
+  done
+  shift $((OPTIND - 1))
+
+  target="$1"
+  if [ -z "$target" ]; then
+    print_usage
+    exit 1
+  fi
+
+  if [ ! -d "$target" ]; then
+    echo "Directory '${target}' does not exists."
+    exit 1
+  fi
+}
+
+# -----------------------------------------------------------------------------
+# Generate archive file name
+#
+# @param {string} $1 - target directory
+# @param {string} $2 - extension (deafult: ".tar.gz")
+#
+generate_filename() {
+  if [ $# -eq 0 ]; then
+    print_params_error "generate_filename" "$@"
+    exit 1
+  fi
+
+  local target="$1"
+  local extension="${2:-tar.gz}"
+
+  local filename
+  filename="$(pwd)/${target##*/}"
+
+  if [ $enable_timestamp -eq 1 ]; then
+    filename="${filename}_$(date +%Y%m%d_%H%M%S)"
+  fi
+
+  filename="${filename}${extension}"
+
+  printf "%s" "$filename"
+}
+
+# -----------------------------------------------------------------------------
+# Archive with git command
+#
+# @param {string} $1 - target directory
+# @param {string} $2 - archive file name
+#
+archive_with_git() {
+  if [ $# -ne 2 ]; then
+    print_params_error "archive_with_tar" "$@"
+    exit 1
+  fi
+
+  local target="$1"
+  local filename="$2"
+
+  if [ ! -d "${target}/.git" ]; then
+    echo "Option -g is specified, but '${target}/.git' does not exists."
+    exit 1
+  fi
+
+  if ! command -v "git" 1>/dev/null 2>&1; then
+    echo "Option -g is specified, but 'git' command is not installed."
+    exit 1
+  fi
+
+  local base
+  base="$(basename "$target")"
+
+  cd "$target" > /dev/null || exit 1
+
+  git archive --format=tar.gz --prefix="${base}/" \
+    -o "${tmpdir}/${filename##*/}" HEAD
+
+  test $? -ne 0 && exit 1
+
+  mv "${tmpdir}/${filename##*/}" "$filename"
+
+  echo "Successfully created archive file."
+  echo "  target  = ${target}"
+  echo "  archive = ${filename}"
+}
+
+# -----------------------------------------------------------------------------
+# Archive with tar command
+#
+# @param {string} $1 - target directory
+# @param {string} $2 - archive file name
+#
+archive_with_tar() {
+  if [ $# -ne 2 ]; then
+    print_params_error "archive_with_tar" "$@"
+    exit 1
+  fi
+
+  local target="$1"
+  local filename="$2"
+
+  cd "$(realpath "${target}/../")" > /dev/null || exit 1
+
+  tar czf "${tmpdir}/${filename##*/}" "${target##*/}"
+  test $? -ne 0 && exit 1
+
+  mv "${tmpdir}/${filename##*/}" "$filename"
+
+  echo "Successfully created archive file."
+  echo "  target  = ${target}"
+  echo "  archive = ${filename}"
+}
+
+# -----------------------------------------------------------------------------
+# Clean up
+#
+# @param {number} - signal number
+#
+cleanup() {
+  trap '' HUP INT QUIT PIPE TERM
+
+  rm -rf "$tmpdir"
+
+  trap - EXIT "$1"
+  [ "$1" = EXIT ] || kill -s "$1" $$ || exit 1
+}
+
+# ----------------------------------------------------------------------------
+# Archive directory
+#
+# @param {string} $1 - target directory
+#
+archive() {
+  if [ $# -ne 1 ]; then
+    print_params_error "archive" "$@"
+    exit 1
+  fi
+
+  local target
+  target="$(realpath "$1")"
+
+  local filename
+  filename="$(generate_filename "$target" ".tar.gz")"
+
+  if [ -e "${filename}" ]; then
+    echo "${filename} is already exists. overwrite? [y/N]"
+    printf "> "
+
+    read -r input
+    if [ "$input" != "Y" ] && [ "$input" != "y" ]; then
+      echo "Skipped creating archive file."
+      echo "  target  = ${target}"
+      echo "  archive = ${filename}"
+      return 1
+    fi
+  fi
+
+  tmpdir=$(mktemp -d)
+
+  for i in EXIT HUP INT QUIT PIPE TERM; do
+    trap 'cleanup '"$i" "$i"
+  done
+
+  if [ $use_git_archive -eq 1 ]; then
+    archive_with_git "$target" "$filename"
+  else
+    archive_with_tar "$target" "$filename"
+  fi
+}
+
+# -----------------------------------------------------------------------------
+# main
+#
+# @param {strings} - command line arguments
+#
+main() {
+  parse_args "$@"
+
+  archive "$target"
+}
+
+main "$@"

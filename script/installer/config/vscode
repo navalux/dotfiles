@@ -1,0 +1,126 @@
+#!/bin/sh
+
+set -eu
+
+unset -f install_vscode_extension
+unset -f install_vscode_extensions
+unset -f install_config_vscode_copy
+unset -f install_config_vscode
+unset -f install_config_vscode_driver
+
+# ---------------------------------------------------------------------------
+# Install extension
+#
+# @param {string} $1 - extension id
+#
+install_vscode_extension() {
+  if [ $# -ne 1 ]; then
+    msg_params_error "install_vscode_extension" "$@"
+    exit 1
+  fi
+
+  local extension="$1"
+
+  msg_normal "Installing extension ${extension}."
+
+  if ! code --install-extension "$extension"; then
+    msg_failure "Failed to install extension ${extension}."
+    exit 1
+  fi
+}
+
+# ---------------------------------------------------------------------------
+# Install extensions
+#
+install_vscode_extensions() {
+  msg_prompt "Do you want to install these extensions? [y/N]" \
+    "Draw.io Integration        hediet.vscode-drawio" \
+    "EditorConfig for VS Code   editorconfig.editorconfig" \
+    "Hex Editor                 ms-vscode.hexeditor" \
+    "Markdown All in One        yzhang.markdown-all-in-one" \
+    "Nomo Dark Icon Theme       be5invis.vscode-icontheme-nomo-dark" \
+    "Vim                        vscodevim.vim"
+
+  read -r input
+  if [ "$input" != "Y" ] && [ "$input" != "y" ]; then
+    msg_normal "Skipped extension installation."
+    return 0
+  fi
+
+  install_vscode_extension hediet.vscode-drawio
+  install_vscode_extension editorconfig.editorconfig
+  install_vscode_extension ms-vscode.hexeditor
+  install_vscode_extension yzhang.markdown-all-in-one
+  install_vscode_extension be5invis.vscode-icontheme-nomo-dark
+  install_vscode_extension vscodevim.vim
+}
+
+# -----------------------------------------------------------------------------
+# Copy file
+#
+# @param {string} $1 - source
+# @param {string} $2 - destination
+#
+install_config_vscode_copy() {
+  if [ $# -ne 2 ]; then
+    msg_param_error "install_config_vscode_copy" "$@"
+    exit 1
+  fi
+
+  local src="$1"
+  local dst="$2"
+
+  msg_normal "Installing ${src##*/}"
+  if ! fs_cp "$src" "$dst"; then
+    exit 1
+  fi
+}
+
+# -----------------------------------------------------------------------------
+# Installer
+#
+# @param {string} $1 - project root path
+#
+install_config_vscode() {
+  if [ $# -ne 1 ]; then
+    msg_param_error "install_config_vscode" "$@"
+    exit 1
+  fi
+
+  local root="$1"
+
+  local src="${root}/config/vscode"
+  local dst="${HOME}/.config/Code/User"
+
+  if ! command -v code >/dev/null 2>&1; then
+    msg_failure "Visual Studio Code is not installed."
+    exit 1
+  fi
+
+  if [ ! -d "$dst" ]; then
+    msg_failure "Please run Visual Studio Code at least once."
+    exit 1
+  fi
+
+  install_config_vscode_copy "${src}/keybindings.json" "${dst}/keybindings.json"
+  install_config_vscode_copy "${src}/settings.json"    "${dst}/settings.json"
+  install_vscode_extensions
+}
+
+# -----------------------------------------------------------------------------
+# Driver
+#
+install_config_vscode_driver() {
+  local root
+  root="$(realpath "$(dirname "$(realpath "$0")")/../../../")"
+
+  . "${root}/script/lib/fs"
+  . "${root}/script/lib/list"
+  . "${root}/script/lib/msg"
+
+  install_config_vscode "$root"
+}
+
+if [ "${0##*/}" = "vscode" ]; then
+  install_config_vscode_driver
+fi

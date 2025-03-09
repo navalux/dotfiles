@@ -1,0 +1,7 @@
+# Not following: (error message here)
+# https://www.shellcheck.net/wiki/SC1091
+disable=SC1091
+
+# In POSIX sh, local is undefined.
+# https://www.shellcheck.net/wiki/SC3043
+disable=SC3043

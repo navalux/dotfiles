@@ -1,0 +1,88 @@
+#!/bin/sh
+
+set -eu
+
+unset -f install_config_tmux_symlink
+unset -f install_config_tmux
+unset -f install_config_tmux_driver
+
+# -----------------------------------------------------------------------------
+# Make symbolic link
+#
+# @param {string} $1 - target
+# @param {string} $2 - link
+#
+install_config_tmux_symlink() {
+  if [ $# -ne 2 ]; then
+    msg_param_error "install_config_tmux_symlink" "$@"
+    exit 1
+  fi
+
+  local target="$1"
+  local link="$2"
+
+  msg_normal "Installing ${target##*/}"
+  if ! fs_ln_s "$target" "$link"; then
+    exit 1
+  fi
+}
+
+# -----------------------------------------------------------------------------
+# Installer
+#
+# @param {string} $1 - project root path
+#
+install_config_tmux() {
+  if [ $# -ne 1 ]; then
+    msg_param_error "install_config_tmux" "$@"
+    exit 1
+  fi
+
+  local root="$1"
+
+  local tmux_version
+  tmux_version=$(tmux -V | sed -En "s/tmux (.*)/\1/p")
+
+  local major
+  local minor
+  major=$(echo "$tmux_version" | sed -En "s/([0-9]+)\.([0-9]+).*/\1/p")
+  minor=$(echo "$tmux_version" | sed -En "s/([0-9]+)\.([0-9]+).*/\2/p")
+
+  if [ "$major" -gt 3 ] || { [ "$major" -eq 3 ] && [ "$minor" -ge 2 ]; } then
+    local src="${root}/config/tmux"
+    local dst="${HOME}/.config/tmux"
+
+    if ! fs_mkdir "$dst"; then
+      exit 1
+    fi
+
+    install_config_tmux_symlink "${src}/tmux.conf" "${dst}/tmux.conf"
+  else
+    local src="${root}/config/tmux"
+    local dst="${HOME}"
+
+    if [ "$major" -lt 3 ]; then
+      install_config_tmux_symlink "${src}/tmux-2.9.conf" "${dst}/.tmux.conf"
+    else
+      install_config_tmux_symlink "${src}/tmux.conf" "${dst}/.tmux.conf"
+    fi
+  fi
+}
+
+# -----------------------------------------------------------------------------
+# Driver
+#
+install_config_tmux_driver() {
+  local root
+  root="$(realpath "$(dirname "$(realpath "$0")")/../../../")"
+
+  . "${root}/script/lib/fs"
+  . "${root}/script/lib/list"
+  . "${root}/script/lib/msg"
+
+  install_config_tmux "$root"
+}
+
+if [ "${0##*/}" = "tmux" ]; then
+  install_config_tmux_driver
+fi

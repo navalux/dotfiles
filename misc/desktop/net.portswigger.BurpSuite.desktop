@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Name=Burp Suite
+Exec=java -jar /opt/BurpSuite/burpsuite.jar
+Terminal=false
+Icon=/opt/BurpSuite/icon64community.png
+Type=Application
+Categories=Network;
+

@@ -1,0 +1,21 @@
+{
+  "editor.fontFamily": "'PlemolJP Console NF', 'Droid Sans Mono', Consolas, 'Courier New', 'monospace', monospace",
+  "editor.fontSize": 12,
+  "editor.minimap.enabled": false,
+  "extensions.ignoreRecommendations": true,
+  "telemetry.telemetryLevel": "off",
+  "terminal.integrated.allowChords": false,
+  "terminal.integrated.fontSize": 12,
+  "vim.useSystemClipboard": true,
+  "window.customMenuBarAltFocus": false,
+  "window.titleBarStyle": "custom",
+  "workbench.colorTheme": "Default Dark+",
+  "workbench.iconTheme": "vs-nomo-dark",
+  "workbench.startupEditor": "none",
+
+  "[html]": {
+    "editor.defaultFormatter": "vscode.html-language-features"
+  },
+  "html.format.extraLiners": "",
+  "html.format.indentInnerHtml": true
+}
