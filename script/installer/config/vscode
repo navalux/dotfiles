@@ -41,7 +41,6 @@ install_vscode_extensions() {
     "Nomo Dark Icon Theme       be5invis.vscode-icontheme-nomo-dark" \
     "Vim                        vscodevim.vim"
 
-  read -r input
   if [ "$input" != "Y" ] && [ "$input" != "y" ]; then
     msg_normal "Skipped extension installation."
     return 0
