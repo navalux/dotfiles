@@ -51,7 +51,7 @@ time
 tmux
 tree
 valgrind
-vim-gtk3
+vim-nox
 wget
 whois
 wireshark
