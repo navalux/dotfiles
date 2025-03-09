@@ -1,0 +1,7 @@
+<OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/">
+  <ShortName>Dictionary.com</ShortName>
+  <Description>Dictionary.com</Description>
+  <InputEncoding>UTF-8</InputEncoding>
+  <Image width="32" height="32" type="image/png">https://www.dictionary.com/94e56a525da4e9fe0cda.png</Image>
+  <Url type="text/html" template="https://www.dictionary.com/browse/{searchTerms}"/>
+</OpenSearchDescription>

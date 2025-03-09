@@ -1,0 +1,7 @@
+<OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/">
+  <ShortName>Google JP</ShortName>
+  <Description>Google JP</Description>
+  <InputEncoding>UTF-8</InputEncoding>
+  <Image width="32" height="32" type="image/x-icon">https://www.google.co.jp/favicon.ico</Image>
+  <Url type="text/html" template="https://www.google.co.jp/search?name=f&amp;hl=ja&amp;q={searchTerms}"/>
+</OpenSearchDescription>
