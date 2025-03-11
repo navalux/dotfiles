@@ -95,14 +95,15 @@ set completeopt-=preview
 " -----------------------------------------------------------------------------
 "  Editing options by fileype
 "
-autocmd FileType python setl shiftwidth=4 softtabstop=4 tabstop=4 expandtab
-autocmd FileType rust   setl shiftwidth=4 softtabstop=4 tabstop=4 expandtab
-autocmd FileType go     setl shiftwidth=4 softtabstop=4 tabstop=4 noexpandtab
-autocmd FileType make   setl shiftwidth=4 softtabstop=4 tabstop=4 noexpandtab
-autocmd FileType kotlin setl shiftwidth=4 softtabstop=4 tabstop=4 expandtab
-autocmd FileType java   setl shiftwidth=4 softtabstop=4 tabstop=4 expandtab
-autocmd FileType c      setl shiftwidth=4 softtabstop=4 tabstop=4 expandtab
-autocmd FileType cpp    setl shiftwidth=4 softtabstop=4 tabstop=4 expandtab
+autocmd FileType python   setl shiftwidth=4 softtabstop=4 tabstop=4 expandtab
+autocmd FileType rust     setl shiftwidth=4 softtabstop=4 tabstop=4 expandtab
+autocmd FileType go       setl shiftwidth=4 softtabstop=4 tabstop=4 noexpandtab
+autocmd FileType make     setl shiftwidth=4 softtabstop=4 tabstop=4 noexpandtab
+autocmd FileType kotlin   setl shiftwidth=4 softtabstop=4 tabstop=4 expandtab
+autocmd FileType java     setl shiftwidth=4 softtabstop=4 tabstop=4 expandtab
+autocmd FileType c        setl shiftwidth=4 softtabstop=4 tabstop=4 expandtab
+autocmd FileType cpp      setl shiftwidth=4 softtabstop=4 tabstop=4 expandtab
+autocmd FileType markdown setl shiftwidth=4 softtabstop=4 tabstop=4 expandtab
 
 function! EnableGNUStyle()
   if (&filetype == 'c' || &filetype == 'cpp')
