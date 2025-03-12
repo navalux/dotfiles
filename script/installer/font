@@ -1,0 +1,73 @@
+#!/bin/sh
+
+set -eu
+
+unset -f install_font_plemoljp
+unset -f install_font_cleanup
+unset -f install_font
+unset -f install_font_driver
+
+# -----------------------------------------------------------------------------
+# Install PlemolJP
+#
+install_font_plemoljp() {
+  local api_url
+  local version
+  api_url="https://api.github.com/repos/yuru7/PlemolJP/releases/latest"
+  version=$(curl -s "$api_url" | jq -r '.tag_name')
+
+  local url
+  url="https://github.com/yuru7/PlemolJP/releases/download/${version}/PlemolJP_NF_${version}.zip"
+
+  msg_normal "Downloading PlemolJP_NF_${version}.zip"
+  curl -Lo "${temp}/PlemolJP_NF_${version}.zip" "$url"
+
+  msg_normal "Cleaning up font directory"
+  sudo rm -rf /usr/local/share/fonts/PlemolJP_NF_*
+
+  msg_normal "Installing PlemolJP font"
+  sudo unzip "${temp}/PlemolJP_NF_${version}.zip" -d /usr/local/share/fonts/
+}
+
+# -----------------------------------------------------------------------------
+# Cleanup (remove temp directory)
+#
+install_font_cleanup() {
+  trap '' HUP INT QUIT PIPE TERM
+
+  rm -rf "$temp"
+
+  trap - EXIT "$1"
+  [ "$1" = EXIT ] || kill -s "$1" $$ || exit 1
+}
+
+# -----------------------------------------------------------------------------
+# Installer
+#
+install_font() {
+  temp=$(mktemp -d)
+
+  for i in EXIT HUP INT QUIT PIPE TERM; do
+    trap 'install_font_cleanup '"$i" "$i"
+  done
+
+  install_font_plemoljp
+}
+
+# -----------------------------------------------------------------------------
+# Driver
+#
+install_font_driver() {
+  local root
+  root="$(realpath "$(dirname "$(realpath "$0")")/../../../")"
+
+  . "${root}/script/lib/fs"
+  . "${root}/script/lib/list"
+  . "${root}/script/lib/msg"
+
+  install_font
+}
+
+if [ "${0##*/}" = "font" ]; then
+  install_font_driver
+fi
