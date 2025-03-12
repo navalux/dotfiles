@@ -1,0 +1,17 @@
+import = [ "~/.config/alacritty/base16-eighties.toml" ]
+
+[window]
+startup_mode = "Maximized"
+
+[font]
+normal = { family = "PlemolJP Console NF" }
+bold = { style = "Regular" }
+size = 9
+
+[selection]
+save_to_clipboard = true
+
+[cursor]
+style = { shape = "Block", blinking = "Always" }
+blink_interval = 500
+blink_timeout = 0

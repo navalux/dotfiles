@@ -32,6 +32,10 @@ main() {
   file="${root}/config/xfce4-terminal/base16-eighties.theme"
   url="https://github.com/tinted-theming/tinted-terminal/raw/refs/heads/main/themes/xfce4/base16-eighties.theme"
   curl_get "$file" "$url"
+
+  file="${root}/config/alacritty/base16-eighties.toml"
+  url="https://github.com/tinted-theming/tinted-terminal/raw/refs/heads/main/themes/alacritty/base16-eighties.toml"
+  curl_get "$file" "$url"
 }
 
 main "$@"
