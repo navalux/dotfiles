@@ -174,7 +174,6 @@ if exists('##TextYankPost')
   function! s:vim_oscyank_callback(event)
     if index(s:vim_oscyank_registers, a:event.regname)  != -1 &&
           \ index(s:vim_oscyank_operators, a:event.operator) != -1
-      echo 'match'
       call OSCYankRegister(a:event.regname)
     endif
   endfunction
