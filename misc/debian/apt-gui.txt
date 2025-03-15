@@ -9,6 +9,7 @@ clang-format
 cmake
 cmake-doc
 colortest
+cscope
 curl
 dkms
 dnsutils
