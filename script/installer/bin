@@ -50,6 +50,11 @@ install_bin() {
   local bin
 
   install_bin_symlink "$src" "$dst" "archive"
+
+  if command -v "cscope" >/dev/null 2>&1; then
+    install_bin_symlink "$src" "$dst" "cscope-glibc"
+  fi
+
   install_bin_symlink "$src" "$dst" "elf2shellcode"
   install_bin_symlink "$src" "$dst" "fdump"
 

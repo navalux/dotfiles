@@ -1,0 +1,14 @@
+#!/bin/sh
+
+echo '[+] Creating file list for cscope ...'
+find . -type f -name '*.[chS]' \
+  -not -path './benchtests/*' \
+  -not -path './mach/*' \
+  -not -path './hurd/*' \
+  -not -path './sysdeps/mach/*' \
+  -not -path './sysdeps/hurd/*' \
+  -not -path './**/tst-*' \
+  > cscope.index
+
+echo '[+] Generating cscope index file ...'
+cscope -bki cscope.index
