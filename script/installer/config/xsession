@@ -43,7 +43,13 @@ install_config_xsession() {
   local src="${root}/config/xsession"
   local dst="${HOME}"
 
-  install_config_xsession_symlink "${src}/xsession"   "${dst}/.xsession"
+  local distro
+  distro=$(sed -En 's/^ID=(.*)$/\1/p' < /etc/os-release)
+
+  if [ "$distro" != "ubuntu" ]; then
+    install_config_xsession_symlink "${src}/xsession" "${dst}/.xsession"
+  fi
+
   install_config_xsession_symlink "${src}/xsessionrc" "${dst}/.xsessionrc"
 }
 
