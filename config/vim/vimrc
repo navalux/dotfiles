@@ -67,6 +67,13 @@ set listchars=tab:>-,eol:$
 
 set number
 set cursorline
+
+augroup CursorLineControl
+  autocmd!
+  autocmd WinEnter * setlocal cursorline
+  autocmd WinLeave * setlocal nocursorline
+augroup END
+
 if has('+cursorlineopt')
   set cursorlineopt=screenline,number
 endif
