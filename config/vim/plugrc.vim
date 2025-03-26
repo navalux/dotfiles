@@ -95,6 +95,8 @@ if has('patch-8.0.1038')
 else
   Plug 'chriskempson/base16-vim'
 
+  let base16colorspace=256
+
   autocmd VimEnter *
         \ if has('termguicolors')                                             |
         \   set termguicolors                                                 |
