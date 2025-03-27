@@ -143,8 +143,8 @@ function! s:on_lsp_buffer_enabled() abort
 
   nmap <buffer> K <plug>(lsp-hover)
 
-  nnoremap <buffer> <expr><C-J> lsp#scroll(+4)
-  nnoremap <buffer> <expr><C-K> lsp#scroll(-4)
+  nnoremap <buffer> <expr><C-J> lsp#scroll(+1)
+  nnoremap <buffer> <expr><C-K> lsp#scroll(-1)
 
   autocmd! BufWritePre *.rs,*.go call execute('LspDocumentFormatSync')
 endf
