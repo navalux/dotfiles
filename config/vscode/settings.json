@@ -3,6 +3,7 @@
   "editor.fontSize": 12,
   "editor.minimap.enabled": false,
   "extensions.ignoreRecommendations": true,
+  "files.autoGuessEncoding": true,
   "telemetry.telemetryLevel": "off",
   "terminal.integrated.allowChords": false,
   "terminal.integrated.fontSize": 12,
