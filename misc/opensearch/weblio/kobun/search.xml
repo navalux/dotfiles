@@ -1,0 +1,7 @@
+<OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/">
+  <ShortName>weblio古語辞典</ShortName>
+  <Description>weblio古語辞典</Description>
+  <InputEncoding>UTF-8</InputEncoding>
+  <Image width="144" height="144" type="image/png">https://cdn.weblio.jp/e7/img/favicon/kobun.png</Image>
+  <Url type="text/html" template="https://kobun.weblio.jp/content/{searchTerms}" />
+</OpenSearchDescription>
