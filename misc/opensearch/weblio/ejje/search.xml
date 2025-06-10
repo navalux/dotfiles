@@ -1,6 +1,6 @@
 <OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/">
-  <ShortName>weblio</ShortName>
-  <Description>weblio</Description>
+  <ShortName>weblio英和和英辞典</ShortName>
+  <Description>weblio英和和英辞典</Description>
   <InputEncoding>UTF-8</InputEncoding>
   <Image width="144" height="144" type="image/png">https://cdn.weblio.jp/e7/img/favicon/ejje.png</Image>
   <Url type="text/html" template="https://ejje.weblio.jp/content/{searchTerms}" />
