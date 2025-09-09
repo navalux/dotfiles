@@ -170,8 +170,8 @@ endif
 "
 nnoremap <C-W><C-L> :Vexplore!<CR>
 nnoremap <C-W><C-H> :Vexplore<CR>
-nnoremap <C-W><C-J> :Hexplore<CR>
-nnoremap <C-W><C-K> :Hexplore!<CR>
+nnoremap <C-W><C-J> :Hexplore!<CR>
+nnoremap <C-W><C-K> :Hexplore<CR>
 
 " Hit ENTER to disable search highlight
 nnoremap <CR> :noh<CR><CR>
