@@ -109,6 +109,9 @@ fi
 #
 if [ -d "/usr/local/go/bin" ]; then
   prepend_path "/usr/local/go/bin"
+fi
+
+if command -v go >/dev/null 2>&1 && [ -d "$(go env GOPATH)/bin" ]; then
   prepend_path "$(go env GOPATH)/bin"
 fi
 
