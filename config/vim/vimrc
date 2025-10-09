@@ -111,6 +111,7 @@ autocmd FileType java     setl shiftwidth=4 softtabstop=4 tabstop=4 expandtab
 autocmd FileType c        setl shiftwidth=4 softtabstop=4 tabstop=4 expandtab
 autocmd FileType cpp      setl shiftwidth=4 softtabstop=4 tabstop=4 expandtab
 autocmd FileType markdown setl shiftwidth=4 softtabstop=4 tabstop=4 expandtab
+autocmd FileType gitcommit setl colorcolumn=50,72
 
 function! EnableGNUStyle()
   if (&filetype == 'c' || &filetype == 'cpp')
