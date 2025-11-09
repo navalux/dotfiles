@@ -1,0 +1,28 @@
+{
+    "schemes":
+    [
+        {
+            "background": "#2D2D2D",
+            "black": "#2D2D2D",
+            "blue": "#6699CC",
+            "brightBlack": "#747369",
+            "brightBlue": "#6699CC",
+            "brightCyan": "#66CCCC",
+            "brightGreen": "#99CC99",
+            "brightPurple": "#CC99CC",
+            "brightRed": "#F2777A",
+            "brightWhite": "#F2F0EC",
+            "brightYellow": "#FFCC66",
+            "cursorColor": "#D3D0C8",
+            "cyan": "#66CCCC",
+            "foreground": "#D3D0C8",
+            "green": "#99CC99",
+            "name": "Base16 Eighties 256",
+            "purple": "#CC99CC",
+            "red": "#F2777A",
+            "selectionBackground": "#515151",
+            "white": "#D3D0C8",
+            "yellow": "#FFCC66"
+        }
+    ]
+}
