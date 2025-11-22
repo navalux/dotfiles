@@ -71,6 +71,7 @@ install_config_xfce4_terminal() {
   fi
 
   install_config_xfce4_terminal_symlink "${src}/terminalrc" "${dst}/terminalrc"
+  install_config_xfce4_terminal_symlink "${src}/accels.scm" "${dst}/accels.scm"
 
 
   dst="${HOME}/.local/share/xfce4/terminal/colorschemes"
