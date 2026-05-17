@@ -64,6 +64,13 @@ export HISTTIMEFORMAT="%Y-%m-%d %H:%M:%S %z "
 
 
 # -----------------------------------------------------------------------------
+# Share bash history across all sessions/tmux panes in real time
+#
+shopt -s histappend
+export PROMPT_COMMAND="history -a; history -c; history -r; $PROMPT_COMMAND"
+
+
+# -----------------------------------------------------------------------------
 # tinted-shell
 #
 if [ -d "${HOME}/.config/tinted-theming/tinted-shell" ]; then
@@ -176,5 +183,6 @@ fi
 if [ -r "${HOME}/.bashrc" ]; then
   . "${HOME}/.bashrc"
 fi
+
 
 # vim: ft=sh
